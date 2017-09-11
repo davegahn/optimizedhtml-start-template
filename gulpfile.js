@@ -13,6 +13,8 @@ var gulp           = require('gulp'),
 		ftp            = require('vinyl-ftp'),
 		notify         = require("gulp-notify"),
 		rsync          = require('gulp-rsync');
+		plumber          = require('gulp-plumber');
+		pug            = require('gulp-pug');
 
 // Скрипты проекта
 
@@ -57,16 +59,24 @@ gulp.task('sass', function() {
 	.pipe(browserSync.reload({stream: true}));
 });
 
-gulp.task('watch', ['sass', 'js', 'browser-sync'], function() {
+gulp.task('watch', ['sass', 'js', 'pug', 'browser-sync'], function() {
 	gulp.watch('app/sass/**/*.sass', ['sass']);
+	gulp.watch('app/templates/**/*.pug', ['pug']);
 	gulp.watch(['libs/**/*.js', 'app/js/common.js'], ['js']);
-	gulp.watch('app/*.html', browserSync.reload);
 });
 
 gulp.task('imagemin', function() {
 	return gulp.src('app/img/**/*')
 	.pipe(cache(imagemin()))
 	.pipe(gulp.dest('dist/img')); 
+});
+
+gulp.task('pug', function() {
+  gulp.src('./app/templates/*.pug')
+  .pipe(plumber())
+  .pipe(pug())
+  .pipe(gulp.dest('app/'))
+  .pipe(browserSync.reload({stream: true}));
 });
 
 gulp.task('build', ['removedist', 'imagemin', 'sass', 'js'], function() {
